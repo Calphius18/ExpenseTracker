@@ -25,3 +25,11 @@
 .btn-primary {
     @apply w-full text-sm font-medium bg-primary text-white shadow-lg shadow-orange-600/20 p-[10px] rounded-md my-1 cursor-pointer hover:bg-amber-600/35 hover:text-amber-600 transition-all hover:scale-102;
 }
+
+.card {
+    @apply bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/70;  
+}
+
+.card-btn {
+    @apply flex items-center gap-3 text-[12px] font-medium text-gray-700 hover:text-orange-500 bg-gray-50 hover:bg-orange-50 px-4 py-1.5 rounded-lg border border-gray-200/70 cursor-pointer;
+}

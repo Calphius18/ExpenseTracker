@@ -30,24 +30,24 @@ exports.getDashboardData = async (req, res) => {
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
 
       // Find all budget transactions for this user in the last 60 days
-      const last60DaysBudgetTransactions = await Budget.find({
+      const last60DaysBudget = await Budget.find({
         userId: userId,
         date: { $gte: sixtyDaysAgo },
       }).sort({ date: -1 }); // newest first
 
       // Find all expense transactions for this user in the last 30 days
-      const last30DaysExpenseTransactions = await Expense.find({
+      const last30DaysExpenses = await Expense.find({
         userId: userId,
         date: { $gte: thirtyDaysAgo },
       }).sort({ date: -1 }); // newest first
 
       // Get Total Budget of last 60 days
-      const budgetLast60Days = last60DaysBudgetTransactions.reduce(
+      const budgetLast60Days = last60DaysBudget.reduce(
         (sum, transaction) => sum + transaction.amount, 0
       );
 
       // Get Total Expenses of last 30 days
-      const expensesLast30Days = last30DaysExpenseTransactions.reduce(
+      const expensesLast30Days = last30DaysExpenses.reduce(
         (sum, transaction) => sum + transaction.amount, 0
       );
 
@@ -70,13 +70,13 @@ exports.getDashboardData = async (req, res) => {
         totalBudget: totalBudget[0]?.total || 0,
         totalExpenses: totalExpenses[0]?.total || 0,
 
-        last30DaysExpenseTransactions: {
+        last30DaysExpenses: {
             total: expensesLast30Days,
-            transactions: last30DaysExpenseTransactions,
+            transactions: last30DaysExpenses,
         },
         last60DaysBudget: {
             total: budgetLast60Days,
-            transactions: last60DaysBudgetTransactions,
+            transactions: last60DaysBudget,
         },
 
         recentTransactions: lastTransactions,
