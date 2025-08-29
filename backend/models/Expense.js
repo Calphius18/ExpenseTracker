@@ -10,9 +10,6 @@ const ExpenseSchema = new mongoose.Schema({
     source: {
         type: String, required : true
     }, // e.g Head Office, Branch.
-    department: {
-        type: String, required : true
-    }, // e.g IT Support, Infrastructure, Enterprise etc.
     category: {
         type: String, required : true
     }, // e.g For Repairs, Subscription.

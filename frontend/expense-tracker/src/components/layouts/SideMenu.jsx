@@ -7,12 +7,10 @@ import CharAvatar from "../Cards/CharAvatar";
 const SideMenu = ({activeMenu}) => {
   const { user, clearUser } = useContext(UserContext);
 
-  console.log("SIDE_MENU_DATA:", SIDE_MENU_DATA);
-
   const navigate = useNavigate();
 
   const handleClick = (route) => {
-    if (route === "logout") {
+    if (route === "/logout") {
       handleLogout();
       return;
     }

@@ -18,6 +18,8 @@ const CustomBarChart = ({ data }) => {
   };
 
   const CustomTooltip = ({ active, payload }) => {
+
+    console.log("payload", payload)
     if (active && payload && payload.length) {
       return (
         <div className="bg-white shadow-md rounded-lg p-2 border border-gray-300">
@@ -31,8 +33,6 @@ const CustomBarChart = ({ data }) => {
             </span>
           </p>
         </div>
-
-       
       );
     }
     return null;

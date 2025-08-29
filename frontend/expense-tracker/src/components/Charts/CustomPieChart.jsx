@@ -17,8 +17,11 @@ const CustomPieChart = ({
   colors,
   showTextAnchor,
 }) => {
+
+  
+
   return (
-    <ResponsiveContainer width="100%" height={310} className=" mt-3 items-center justify-center">
+    <ResponsiveContainer width="100%" height={350} className=" mt-3 items-center justify-center">
       <PieChart>
         <Pie
           data={data}

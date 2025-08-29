@@ -57,10 +57,10 @@ exports.downloadBudgetExcel = async (req, res) => {
         const budget = await Budget.find({userId}).sort({ date: -1})
 
         const data = budget.map((item) => ({
-                source: item.source,
-                category: item.category,
-                amount: item.amount,
-                date: item.date
+                Source: item.source,
+                Category: item.category,
+                Amount: item.amount,
+                Date: item.date
         }));
 
         const wb = xlsx.utils.book_new();
