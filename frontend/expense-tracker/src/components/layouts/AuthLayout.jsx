@@ -1,5 +1,5 @@
 import React from "react";
-import CARD_EXP from "../../assets/images/card_exp.jpg";
+import CARD_EXP from "../../assets/images/card_exp.png";
 import { TrendingUpDown } from "lucide-react";
 
 const AuthLayout = ({ children }) => {
@@ -27,7 +27,7 @@ const AuthLayout = ({ children }) => {
         <img
           src={CARD_EXP}
           alt="card_exp"
-          className="w-64 lg:w-[90%] absolute bottom-10 shadow-lg shadow-orange-400/20"
+          className="w-64 lg:w-[90%] absolute bottom-10 shadow-lg shadow-orange-400/20 rounded-2xl"
         />
       </div>
     </div>

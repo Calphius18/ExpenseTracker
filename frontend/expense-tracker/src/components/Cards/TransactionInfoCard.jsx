@@ -44,7 +44,7 @@ const TransactionInfoCard = ({
 
                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-md ${getAmountStyles()}`}>
 
-                    <h6 className="text-xs font-medium">
+                    <h6 className="text-xs font-medium whitespace-nowrap">
                         {type === "budget" ? "+" : "-"} ₦{amount} 
                     </h6>
                     {type === "budget" ? <TrendingUp /> : <TrendingDown />}
