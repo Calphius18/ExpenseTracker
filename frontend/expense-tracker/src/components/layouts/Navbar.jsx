@@ -17,7 +17,7 @@ const Navbar = ({activeMenu}) => {
         )}
       </button>
 
-      <h2 className="text-lg font-medium text-black">Expense Tracker</h2>
+      <h2 className="text-lg font-medium text-black">Expense Management System</h2>
 
       {openSideMenu && (
         <div className="fixed top-[60px] -ml-4 bg-white">
