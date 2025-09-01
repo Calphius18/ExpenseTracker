@@ -9,25 +9,17 @@ const expenseRoutes = require("./routes/expenseRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes")
 const app = express();
 
-const allowedOrigins = [
-  "https://expense-tracker-rwzg.vercel.app", // your Vercel frontend
-  "http://localhost:3000",                   // local dev
-];
+const allowedOrigins = [process.env.CLIENT_URL, "http://localhost:3000"];
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: allowedOrigins,
     credentials: true,
   })
 );
+
+app.options("*", cors()); // handle preflight requests
+
 
 // Handle preflight requests
 app.options("*", cors());
