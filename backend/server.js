@@ -9,7 +9,7 @@ const expenseRoutes = require("./routes/expenseRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes")
 const app = express();
 
-const allowedOrigins = [process.env.CLIENT_URL, "http://localhost:3000"];
+const allowedOrigins = [process.env.CLIENT_URL, "https://expense-tracker-rwzg.vercel.app/"];
 
 app.use(
   cors({
