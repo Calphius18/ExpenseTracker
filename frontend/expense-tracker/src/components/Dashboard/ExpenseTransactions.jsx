@@ -18,7 +18,7 @@ const ExpenseTransactions = ({ transactions, onSeeMore }) => {
         {transactions?.slice(0, 4)?.map((expense) => (
           <TransactionInfoCard
             key={expense._id}
-            title={expense.category}
+            title={expense.category + " -> " +expense.source}
             icon={expense.icon}
             date={moment(expense.date).format("Do MMM YYYY")}
             amount={expense.amount}

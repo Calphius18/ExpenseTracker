@@ -6,14 +6,15 @@ exports.addBudget = async (req, res) => {
     const userId = req.user.id;
 
     try {
-        const { icons, source, category, amount, date} = req.body|| {};
+        const { icons, name,source, category, amount, date} = req.body|| {};
 
-        if (!source || !amount || !category || !date) {
+        if (!source || !amount || !category || !date || !name) {
         return res.status(400).json({ message: "Please provide all required fields." });
     }
         const newBudget = new Budget({
             userId,
             icons,
+            name,
             source,
             category,
             amount,
@@ -60,7 +61,8 @@ exports.downloadBudgetExcel = async (req, res) => {
                 Source: item.source,
                 Category: item.category,
                 Amount: item.amount,
-                Date: item.date
+                Date: item.date,
+                Name: item.name
         }));
 
         const wb = xlsx.utils.book_new();

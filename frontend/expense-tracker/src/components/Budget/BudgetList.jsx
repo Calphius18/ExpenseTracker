@@ -7,7 +7,7 @@ const BudgetList = ({ transactions, onDelete, onDownload}) => {
   return (
     <div className="card">
       <div className="flex items-center justify-between">
-        <h5 className="text-lg">Budget Category / Source</h5>
+        <h5 className="text-lg">Budget Category / Personnel</h5>
 
         <button className="card-btn" onClick={onDownload}>
         <Download className='text-base' /> Download
@@ -18,7 +18,7 @@ const BudgetList = ({ transactions, onDelete, onDownload}) => {
           {transactions?.map((budget) => (
             <TransactionInfoCard
               key={budget._id}
-              title={budget.category + " -> " + budget.source}
+              title={budget.category + " -> " + budget.name}
               icon={budget.icon}
               date={moment(budget.date).format("Do MMM YYYY")}
               amount={budget.amount}

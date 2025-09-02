@@ -6,9 +6,9 @@ exports.addExpense = async (req, res) => {
     const userId = req.user.id;
 
     try {
-        const { icons, source, category, amount, date} = req.body|| {};
+        const { icons, source, name, category, amount, date} = req.body|| {};
 
-        if (!source || !amount ||  !category || !date) {
+        if (!source || !amount ||  !category || !name || !date) {
         return res.status(400).json({ message: "Please provide all required fields." });
     }
         const newExpense = new Expense({
@@ -17,6 +17,7 @@ exports.addExpense = async (req, res) => {
             source,
             category,
             amount,
+            name,
             date: new Date(date)
         });
         await newExpense.save();
@@ -60,7 +61,8 @@ exports.downloadExpenseExcel = async (req, res) => {
                 Source: item.source,
                 Category: item.category,
                 Amount: item.amount,
-                Date: item.date
+                Date: item.date,
+                Name: item.name
         }));
 
         const wb = xlsx.utils.book_new();
