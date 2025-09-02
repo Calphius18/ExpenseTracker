@@ -51,19 +51,19 @@ const Home = () => {
     <DashboardLayout activeMenu="Dashboard">
       <div className="my-5 mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <InfoCard
+          {/* <InfoCard
             icon={<CreditCard />}
             label="Total Balance"
             value={addThousandsSeparator(dashboardData?.totalBalance || 0)}
             color="bg-primary"
-          />
+          /> */}
 
-          <InfoCard
+          {/* <InfoCard
             icon={<Wallet />}
             label="Total Budget"
             value={addThousandsSeparator(dashboardData?.totalBudget || 0)}
             color="bg-green-500"
-          />
+          /> */}
 
           <InfoCard
             icon={<HandCoins />}

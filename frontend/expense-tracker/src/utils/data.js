@@ -7,12 +7,12 @@ export const SIDE_MENU_DATA = [
     icon: LayoutDashboard,
     path: "/dashboard",
   },
-  {
-    id: "02",
-    label: "Budget",
-    icon: Coins,
-    path: "/budget",
-  },
+  // {
+  //   id: "02",
+  //   label: "Budget",
+  //   icon: Coins,
+  //   path: "/budget",
+  // },
   {
     id: "03",
     label: "Expenses",
