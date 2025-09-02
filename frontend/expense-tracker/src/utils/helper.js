@@ -18,7 +18,6 @@ export const getInitials = (name) => {
   return initials.toUpperCase();
 };
 
-//Incase "2:30:21"
 export const addThousandsSeparator = (num) => {
   if (num === null || num === undefined) return "";
   return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -32,7 +31,8 @@ export const prepareExpenseBarChartData = (data = []) => {
     amount: item?.amount,
     source: item?.source,
     category: item?.category,
-    id:item._id
+    id:item?._id,
+    name: item?.name
   }));
   
   return chartData;
@@ -45,6 +45,7 @@ export const prepareBudgetBarChartData = (data = []) => {
     amount: item?.amount,
     source: item?.source,
     category: item?.category,
+    name: item?.name,
     id:item._id
   }));
   
@@ -59,6 +60,7 @@ export const prepareExpenseLineChartData = (data = []) => {
     amount: item?.amount,
     source: item?.source,
     category: item?.category,
+    name: item?.name
   }));
   
   return chartData;

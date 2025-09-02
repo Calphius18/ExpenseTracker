@@ -8,12 +8,21 @@ const AddExpenseForm = ({ onAddExpense }) => {
     amount: "",
     date: "",
     icon: "",
+    name: "",
   });
 
   const handleChange = (key, value) => setExpense({ ...expense, [key]: value });
 
   return (
      <div>
+        <Input
+        value={expense.name}
+        onChange={({ target }) => handleChange("name", target.value)}
+        label="Personnel Name"
+        placeholder="Henry George"
+        type="text"
+        />
+
         <Input
         value={expense.source}
         onChange={({ target }) => handleChange("source", target.value)}

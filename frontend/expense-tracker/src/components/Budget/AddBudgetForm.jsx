@@ -8,11 +8,20 @@ const AddBudgetForm = ({ onAddBudget}) => {
         amount: "",
         date: "",
         icon: "",
+        name: "",
     });
 
     const handleChange = (key, value) => setBudget({ ...budget, [key]: value});
   return (
     <div>
+
+        <Input
+        value={budget.name}
+        onChange={({ target }) => handleChange("name", target.value)}
+        label="Personnel Name"
+        placeholder="Head Office (Dept), Branch"
+        type="text"
+        />
 
         <Input
         value={budget.source}

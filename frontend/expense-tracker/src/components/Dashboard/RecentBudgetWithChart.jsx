@@ -22,6 +22,7 @@ const RecentBudgetWithChart = ({ data, totalBudget }) => {
       amount: item?.amount,
       category: item?.category,
       source: item?.source,
+      personnel: item?.name
     }));
 
     setChartData(dataArr);

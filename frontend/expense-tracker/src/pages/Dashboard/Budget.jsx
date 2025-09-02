@@ -48,11 +48,15 @@ const Budget = () => {
 
   // Add Budget
   const addBudget = async (budget) => {
-    const { source, amount, category, date, icon } = budget;
+    const { source, amount, name, category, date, icon } = budget;
 
     // Validation
     if (!source.trim()) {
       toast.error("Source is required");
+      return;
+    }
+    if (!name.trim()) {
+      toast.error("Name is required");
       return;
     }
     if (!category.trim()) {
@@ -76,6 +80,7 @@ const Budget = () => {
         category,
         amount,
         date,
+        name,
         icon,
       });
 
