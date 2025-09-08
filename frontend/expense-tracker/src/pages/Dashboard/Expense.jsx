@@ -136,6 +136,32 @@ const Expense = () => {
     }
   }
 
+  // Upload Expenses
+const uploadExpenseDetails = async (file) => {
+  if (!file) {
+    toast.error("Please select a file to upload");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file); // Capital F since backend expects `File`
+
+  try {
+    await axiosInstance.post(
+      API_ENDPOINTS.EXPENSE.UPLOAD_EXCEL_EXPENSE,
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+
+    toast.success("Expenses uploaded successfully");
+    fetchExpenseDetails(); // Refresh list after upload
+  } catch (error) {
+    console.error("Error uploading expenses:", error);
+    toast.error(error.response?.data?.message || "Failed to upload file");
+  }
+};
+
+
   useEffect(() => {
     fetchExpenseDetails();
 
@@ -161,6 +187,7 @@ const Expense = () => {
               setOpenDeleteAlert({ show : true, data: id});
             }}
             onDownload={downloadExpenseDetails}
+            onUpload={uploadExpenseDetails}
           />
 
         </div>
