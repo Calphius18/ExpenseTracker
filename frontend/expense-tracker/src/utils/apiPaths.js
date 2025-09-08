@@ -20,7 +20,8 @@ export const API_ENDPOINTS = {
         ADD_EXPENSE : "/api/v1/expense/add",
         GET_ALL_EXPENSE : "/api/v1/expense/get",
         DELETE_EXPENSE : (expenseId) => `/api/v1/expense/${expenseId}`,
-        DOWNLOAD_EXCEL_EXPENSE : "/api/v1/expense/downloadExcel"
+        DOWNLOAD_EXCEL_EXPENSE : "/api/v1/expense/downloadExcel",
+        UPLOAD_EXCEL_EXPENSE : "/api/v1/expense/uploadExcel"
     },
     IMAGE : {
         UPLOAD_IMAGE : "/api/v1/auth/upload-image",

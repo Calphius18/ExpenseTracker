@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const ExpenseSchema = new mongoose.Schema({
     userId : {
-            type: mongoose.Schema.Types.ObjectId, ref: "User", required: true
+        type: mongoose.Schema.Types.ObjectId, ref: "User", required: true
     },
     icons: {
         type: String
@@ -21,7 +21,14 @@ const ExpenseSchema = new mongoose.Schema({
     },
     name: {
         type: String, required : true
-    }
+    },
+    externalId: {
+        type: String,
+        index: true
+    } // 👈 optional transaction identifier from Excel
 }, {timestamps: true});
+
+// 👇 This ensures (userId + externalId) is unique
+ExpenseSchema.index({ userId: 1, externalId: 1 }, { unique: true });
 
 module.exports = mongoose.model("Expense", ExpenseSchema);
