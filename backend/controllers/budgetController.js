@@ -6,7 +6,7 @@ exports.addBudget = async (req, res) => {
     const userId = req.user.id;
 
     try {
-        const { icons, name,source, category, amount, date} = req.body|| {};
+        const { icons, name, source, category, amount, date} = req.body|| {};
 
         if (!source || !amount || !category || !date || !name) {
         return res.status(400).json({ message: "Please provide all required fields." });
