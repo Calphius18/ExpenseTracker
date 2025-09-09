@@ -31,7 +31,7 @@ const TransactionInfoCard = ({
       </div>
 
       {/* Amount + Delete */}
-      <div className="flex flex-col items-end sm:flex-row sm:items-center gap-2">
+      <div className="flex flex-col items-end md:flex-row md:items-center gap-2">
         {/* Amount */}
         <div
           className={`flex items-center gap-2 px-3 py-1.5 rounded-md ${getAmountStyles()}`}
@@ -47,14 +47,14 @@ const TransactionInfoCard = ({
           <>
             {/* Mobile: Full red button */}
             <button
-              className="flex items-center gap-1 px-3 py-1.5 rounded-md bg-red-500 text-white text-xs font-medium sm:hidden cursor-pointer"
+              className="flex items-center gap-1 px-3 py-1.5 rounded-md bg-red-500 text-white text-xs font-medium md:hidden cursor-pointer"
               onClick={onDelete}
             >
               <Trash2 size={16} />
               Delete
             </button>
             {/* Desktop: Subtle icon-only with tooltip */}
-            <div className="hidden sm:flex relative group/icon">
+            <div className="hidden md:flex relative group/icon">
               <button
                 className="text-gray-400 hover:text-red-500 
                opacity-0 group-hover:opacity-100 

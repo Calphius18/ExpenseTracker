@@ -47,52 +47,62 @@ const Expense = () => {
 
   // Add Expense
   const addExpense = async (expense) => {
-    const { source, name, amount, category, date, icon } = expense;
+  const { source, name, amount, category, date, icon, type, percentagePaid } = expense;
 
-    // Validation
-    if (!source.trim()) {
-      toast.error("Source is required");
-      return;
-    }
-    if (!name.trim()) {
-      toast.error("Name is required");
-      return;
-    }
-    if (!category.trim()) {
-      toast.error("Category is required");
-      return;
-    }
+  // Validation
+  console.log("Source value:", source);
+  if (!source.trim()) {
+    toast.error("Source is required");
+    return;
+  }
+  if (!name.trim()) {
+    toast.error("Name is required");
+    return;
+  }
+  if (!category.trim()) {
+    toast.error("Category is required");
+    return;
+  }
+  if (!amount || isNaN(amount) || Number(amount) <= 0) {
+    toast.error("Amount should be a valid number greater than 0.");
+    return;
+  }
+  if (!date) {
+    toast.error("Date is required.");
+    return;
+  }
+  if (percentagePaid < 0 || percentagePaid > 100) {
+    toast.error("Percentage Paid must be between 0 and 100.");
+    return;
+  }
+  if (!type) {
+    toast.error("Expense Type is required.");
+    return;
+  }
 
-    if (!amount || isNaN(amount) || Number(amount) <= 0) {
-      toast.error("Amount should be a valid number greater than 0.");
-      return;
-    }
+  try {
+    await axiosInstance.post(API_ENDPOINTS.EXPENSE.ADD_EXPENSE, {
+      source,
+      category,
+      amount,
+      date,
+      name,
+      icon,
+      type,             // send type
+      percentagePaid,   // send percentagePaid
+    });
 
-    if (!date) {
-      toast.error("Date is required.");
-      return;
-    }
+    setOpenAddExpenseModal(false);
+    toast.success("Expense Added Successfully");
+    fetchExpenseDetails();
+  } catch (error) {
+    console.error(
+      "Error Adding Expense:",
+      error.response?.data?.message || error.message
+    );
+  }
+};
 
-    try {
-      await axiosInstance.post(API_ENDPOINTS.EXPENSE.ADD_EXPENSE, {
-        source,
-        category,
-        amount,
-        date,
-        name,
-        icon,
-      });
-
-      setOpenAddExpenseModal(false);
-      toast.success("Expense Added Successfully");
-      fetchExpenseDetails();
-    } catch (error) {
-      console.error(
-        "Error Adding Expense:",
-        error.response?.data?.message || error.message
-      );
-    }
-  };
 
   // Delete Expense
   const deleteExpense = async (id) => {
@@ -137,6 +147,7 @@ const Expense = () => {
   }
 
   // Upload Expenses
+// Upload Expenses
 const uploadExpenseDetails = async (file) => {
   if (!file) {
     toast.error("Please select a file to upload");
@@ -144,22 +155,29 @@ const uploadExpenseDetails = async (file) => {
   }
 
   const formData = new FormData();
-  formData.append("file", file); // Capital F since backend expects `File`
+  formData.append("file", file);
 
   try {
-    await axiosInstance.post(
+    const response = await axiosInstance.post(
       API_ENDPOINTS.EXPENSE.UPLOAD_EXCEL_EXPENSE,
       formData,
       { headers: { "Content-Type": "multipart/form-data" } }
     );
 
-    toast.success("Expenses uploaded successfully");
+    const { message, totalRows, attempted } = response.data;
+
+    toast.success(
+      `${message}\nTotal Rows: ${totalRows}\nProcessed: ${attempted}`
+    );
+
     fetchExpenseDetails(); // Refresh list after upload
   } catch (error) {
     console.error("Error uploading expenses:", error);
     toast.error(error.response?.data?.message || "Failed to upload file");
   }
 };
+
+
 
 
   useEffect(() => {
