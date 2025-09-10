@@ -190,28 +190,29 @@ exports.uploadExpenseExcel = async (req, res) => {
           };
 
       return {
-        updateOne: {
-          filter,
-          update: {
-            $setOnInsert: {
-              userId: exp.userId,
-              source: exp.source,
-              category: exp.category,
-              type: exp.type,
-              name: exp.name,
-              date: exp.date,
-              icons: exp.icons,
-              externalId: exp.externalId,
-            },
-            $set: {
-              amount: exp.amount, // ✅ Update amount if it changes
-              percentagePaid: exp.percentagePaid,
-              balanceAmount: exp.balanceAmount,
-            },
-          },
-          upsert: true,
-        },
-      };
+  updateOne: {
+    filter,
+    update: {
+      $setOnInsert: {
+        userId: exp.userId,
+        source: exp.source,
+        category: exp.category,
+        name: exp.name,
+        date: exp.date,
+        icons: exp.icons,
+        externalId: exp.externalId,
+      },
+      $set: {
+        amount: exp.amount,        // ✅ Update amount if it changes
+        percentagePaid: exp.percentagePaid,
+        balanceAmount: exp.balanceAmount,
+        type: exp.type,            // ✅ Now updates Type safely
+      },
+    },
+    upsert: true,
+  },
+};
+
     });
 
     const result = await Expense.bulkWrite(operations);
@@ -228,5 +229,148 @@ exports.uploadExpenseExcel = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error uploading expenses", error: error.message });
+  }
+};
+
+// GET report of expenses (JSON)
+exports.getExpensesReport = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const {
+      name,
+      source,
+      type,
+      dateFrom,
+      dateTo,
+      search,
+      page = 1,
+      limit = 1000,
+      sortBy = "date",
+      order = "desc",
+    } = req.query;
+
+    // Base filter
+    const baseFilter = { userId };
+
+    if (name) baseFilter.name = new RegExp(name, "i");
+    if (source) baseFilter.source = new RegExp(source, "i");
+    if (type) baseFilter.type = type;
+
+    // Search across multiple fields
+    if (search) {
+      baseFilter.$or = [
+        { name: new RegExp(search, "i") },
+        { source: new RegExp(search, "i") },
+        { category: new RegExp(search, "i") },
+      ];
+    }
+
+    // Date range filter (use the actual `date` field, not createdAt)
+    if (dateFrom || dateTo) {
+      baseFilter.date = {};
+      if (dateFrom) baseFilter.date.$gte = new Date(dateFrom);
+      if (dateTo) {
+        const d = new Date(dateTo);
+        d.setHours(23, 59, 59, 999); // include the full "to" day
+        baseFilter.date.$lte = d;
+      }
+    }
+
+    // Pagination
+    const p = Math.max(1, parseInt(page, 10) || 1);
+    const lim = Math.max(1, Math.min(5000, parseInt(limit, 10) || 1000));
+    const skip = (p - 1) * lim;
+
+    // Sort
+    const sortOrder = order === "asc" ? 1 : -1;
+    const sort = { [sortBy]: sortOrder };
+
+    // Query
+    const [expenses, total] = await Promise.all([
+      Expense.find(baseFilter).sort(sort).skip(skip).limit(lim).lean().exec(),
+      Expense.countDocuments(baseFilter),
+    ]);
+
+    res.json({
+      expenses,
+      total,
+      page: p,
+      limit: lim,
+    });
+  } catch (err) {
+    console.error("getExpensesReport error:", err);
+    res.status(500).json({ message: "Error fetching report of expenses", error: err.message });
+  }
+};
+
+// DOWNLOAD filtered expenses as Excel
+exports.downloadExpensesReport = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { name, source, type, dateFrom, dateTo, search } = req.query;
+
+    // Base filter
+    const baseFilter = { userId };
+    if (name) baseFilter.name = new RegExp(name, "i");
+    if (source) baseFilter.source = new RegExp(source, "i");
+    if (type) baseFilter.type = type;
+
+    // Search across multiple fields
+    if (search) {
+      baseFilter.$or = [
+        { name: new RegExp(search, "i") },
+        { source: new RegExp(search, "i") },
+        { category: new RegExp(search, "i") },
+      ];
+    }
+
+    // Date range filter
+    if (dateFrom || dateTo) {
+      baseFilter.date = {};
+      if (dateFrom) baseFilter.date.$gte = new Date(dateFrom);
+      if (dateTo) {
+        const d = new Date(dateTo);
+        d.setHours(23, 59, 59, 999); // include the full "to" day
+        baseFilter.date.$lte = d;
+      }
+    }
+
+    // Query
+    const expenses = await Expense.find(baseFilter).sort({ date: -1 }).lean();
+
+    // Transform for Excel
+    const data = expenses.map((e) => ({
+      Source: e.source,
+      Category: e.category,
+      Type: e.type,
+      Name: e.name,
+      Amount: e.amount,
+      Date: e.date ? new Date(e.date).toISOString().split("T")[0] : "",
+      PercentagePaid: e.percentagePaid,
+      BalanceAmount: e.balanceAmount,
+    }));
+
+    // Generate Excel
+    const wb = xlsx.utils.book_new();
+    const ws = xlsx.utils.json_to_sheet(data);
+    xlsx.utils.book_append_sheet(wb, ws, "Expenses");
+
+    const buffer = xlsx.write(wb, { bookType: "xlsx", type: "buffer" });
+
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=filtered_expenses.xlsx"
+    );
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+
+    res.send(buffer);
+  } catch (err) {
+    console.error("downloadExpensesReport error:", err);
+    res
+      .status(500)
+      .json({ message: "Error downloading expenses", error: err.message });
   }
 };
