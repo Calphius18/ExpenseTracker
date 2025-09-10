@@ -1,4 +1,4 @@
-import { LayoutDashboard, Coins, Wallet, LogOut } from "lucide-react";
+import { LayoutDashboard, Wallet, ClipboardList, LogOut } from "lucide-react";
 
 export const SIDE_MENU_DATA = [
   {
@@ -14,11 +14,19 @@ export const SIDE_MENU_DATA = [
   //   path: "/budget",
   // },
   {
-    id: "03",
+    id: "02",
     label: "Expenses",
     icon: Wallet,
     path: "/expense",
   },
+
+  {
+    id: "03",
+    label: "Report",
+    icon: ClipboardList,
+    path: "/report",
+  },
+
   {
     id: "04",
     label: "Logout",
