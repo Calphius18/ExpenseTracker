@@ -124,6 +124,9 @@ exports.uploadExpenseExcel = async (req, res) => {
 
     const expenses = [];
 
+    // Allowed expense types
+    const ALLOWED_TYPES = ["CAPEX", "OPEX", "Transport Fee"];
+
     for (const row of rows) {
       const {
         Source,
@@ -139,6 +142,11 @@ exports.uploadExpenseExcel = async (req, res) => {
 
       if (!Source || !Category || !Amount || !Name || !DateField) continue;
 
+      // ✅ Validate Type
+      const cleanType = ALLOWED_TYPES.includes(String(Type).trim())
+        ? String(Type).trim()
+        : "CAPEX"; // fallback if invalid or missing
+
       // Parse Excel date or ISO string
       let parsedDate;
       if (typeof DateField === "number") {
@@ -149,7 +157,6 @@ exports.uploadExpenseExcel = async (req, res) => {
         if (isNaN(parsedDate.getTime())) continue;
       }
 
-      // Normalize date to YYYY-MM-DD (string)
       const normalizedDate = parsedDate.toISOString().split("T")[0];
 
       const amountNum = Number(Amount);
@@ -164,7 +171,7 @@ exports.uploadExpenseExcel = async (req, res) => {
         name: String(Name).trim(),
         date: normalizedDate,
         icons: Icons || null,
-        type: Type || "CAPEX",
+        type: cleanType, // ✅ safe validated type
         percentagePaid: paidPercent,
         balanceAmount: balance,
         externalId: ExternalId ? String(ExternalId).trim() : undefined,
@@ -190,29 +197,28 @@ exports.uploadExpenseExcel = async (req, res) => {
           };
 
       return {
-  updateOne: {
-    filter,
-    update: {
-      $setOnInsert: {
-        userId: exp.userId,
-        source: exp.source,
-        category: exp.category,
-        name: exp.name,
-        date: exp.date,
-        icons: exp.icons,
-        externalId: exp.externalId,
-      },
-      $set: {
-        amount: exp.amount,        // ✅ Update amount if it changes
-        percentagePaid: exp.percentagePaid,
-        balanceAmount: exp.balanceAmount,
-        type: exp.type,            // ✅ Now updates Type safely
-      },
-    },
-    upsert: true,
-  },
-};
-
+        updateOne: {
+          filter,
+          update: {
+            $setOnInsert: {
+              userId: exp.userId,
+              source: exp.source,
+              category: exp.category,
+              name: exp.name,
+              date: exp.date,
+              icons: exp.icons,
+              externalId: exp.externalId,
+            },
+            $set: {
+              amount: exp.amount, // ✅ Update amount if it changes
+              percentagePaid: exp.percentagePaid,
+              balanceAmount: exp.balanceAmount,
+              type: exp.type, // ✅ Now updates Type safely
+            },
+          },
+          upsert: true,
+        },
+      };
     });
 
     const result = await Expense.bulkWrite(operations);
@@ -299,7 +305,12 @@ exports.getExpensesReport = async (req, res) => {
     });
   } catch (err) {
     console.error("getExpensesReport error:", err);
-    res.status(500).json({ message: "Error fetching report of expenses", error: err.message });
+    res
+      .status(500)
+      .json({
+        message: "Error fetching report of expenses",
+        error: err.message,
+      });
   }
 };
 
