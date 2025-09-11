@@ -41,7 +41,7 @@ const ExpenseRow = ({ exp, mode }) => {
         <span className="font-semibold">Type:</span> {exp.type}
       </p>
       <p>
-        <span className="font-semibold">Amount:</span> {exp.amount}
+        <span className="font-semibold">Amount:</span> ₦{exp.amount}
       </p>
       <p>
         <span className="font-semibold">Percentage Paid:</span>{" "}
@@ -49,7 +49,7 @@ const ExpenseRow = ({ exp, mode }) => {
       </p>
       <p>
         <span className="font-semibold">Balance Amount:</span>{" "}
-        {exp.balanceAmount}
+        ₦{exp.balanceAmount}
       </p>
       <p>
         <span className="font-semibold">Date:</span>{" "}
