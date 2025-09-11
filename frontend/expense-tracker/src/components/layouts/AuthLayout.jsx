@@ -4,7 +4,7 @@ import { TrendingUpDown } from "lucide-react";
 
 const AuthLayout = ({ children }) => {
   return (
-    <div className="flex">
+    <div className="flex bg-gradient-to-br from-orange-200 via-gray-200 to-orange-300">
       <div className="w-screen h-screen px-12 pt-8 pb-12 md:w-[60vw]">
         <h2 className="text-lg font-medium text-black">AccionMfb IT Expense Tracker</h2>
         {children}
