@@ -31,4 +31,9 @@ export const API_ENDPOINTS = {
   IMAGE: {
     UPLOAD_IMAGE: "/api/v1/auth/upload-image",
   },
+  ADMIN: {
+    GET_ALL_USERS: "/api/v1/admin/users",
+    UPDATE_ROLE: (userId) => `/api/v1/admin/role/${userId}`,
+    REQUEST_ADMIN: "/api/v1/admin/request",
+  },
 };

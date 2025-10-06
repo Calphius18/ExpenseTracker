@@ -1,9 +1,9 @@
 const xlsx = require("xlsx");
 const Expense = require("../models/Expense");
 
-// Add Expense Source
+// ✅ Add Expense
 exports.addExpense = async (req, res) => {
-  const userId = req.user.id;
+  const userId = req.user.id; // keep for tracking who added
 
   try {
     const {
@@ -32,32 +32,31 @@ exports.addExpense = async (req, res) => {
     }
 
     const newExpense = new Expense({
-      userId,
+      userId, // keep for audit trail
       icons,
       source: String(source).trim(),
       category: String(category).trim(),
-      amount: Number(amount), // ensure number
-      type: type || "Cash", // default if missing
+      amount: Number(amount),
+      type: type || "CAPEX",
       percentagePaid: Number(percentagePaid) || 0,
       name: String(name).trim(),
-      date: date ? new Date(date) : new Date(), // default to now if missing
+      date: date ? new Date(date) : new Date(),
     });
 
     await newExpense.save();
     res.status(200).json(newExpense);
   } catch (error) {
+    console.error("❌ addExpense error:", error);
     res
       .status(500)
       .json({ message: "Error adding Expense source", error: error.message });
   }
 };
 
-// Get All Expenses
+// ✅ Get All Expenses (shared across all users)
 exports.getAllExpense = async (req, res) => {
-  const userId = req.user.id;
-
   try {
-    const expenses = await Expense.find({ userId }).sort({ date: -1 });
+    const expenses = await Expense.find().sort({ date: -1 });
     res.status(200).json(expenses);
   } catch (error) {
     res.status(500).json({
@@ -67,24 +66,20 @@ exports.getAllExpense = async (req, res) => {
   }
 };
 
-// Delete Expense Source
+// ✅ Delete Expense
 exports.deleteExpense = async (req, res) => {
   try {
     await Expense.findByIdAndDelete(req.params.id);
-    res.json({ message: "Expense source deleted successfully" });
+    res.json({ message: "Expense deleted successfully" });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error deleting Expense source", error: error.message });
+    res.status(500).json({ message: "Error deleting Expense", error: error.message });
   }
 };
 
-// Download Excel
+// ✅ Download Excel (shared)
 exports.downloadExpenseExcel = async (req, res) => {
-  const userId = req.user.id;
-
   try {
-    const expenses = await Expense.find({ userId }).sort({ date: -1 });
+    const expenses = await Expense.find().sort({ date: -1 });
 
     const data = expenses.map((item) => ({
       Source: item.source,
@@ -95,20 +90,31 @@ exports.downloadExpenseExcel = async (req, res) => {
       Type: item.type,
       PercentagePaid: item.percentagePaid,
       BalanceAmount: item.balanceAmount,
+      AddedBy: item.userId || "Unknown", // optional tracker
     }));
 
     const wb = xlsx.utils.book_new();
     const ws = xlsx.utils.json_to_sheet(data);
-
     xlsx.utils.book_append_sheet(wb, ws, "Expense");
-    xlsx.writeFile(wb, "Expense_details.xlsx");
-    res.download("Expense_details.xlsx");
+
+    const buffer = xlsx.write(wb, { type: "buffer", bookType: "xlsx" });
+
+    res.setHeader(
+      "Content-Disposition",
+      "attachment; filename=Expense_details.xlsx"
+    );
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.send(buffer);
   } catch (error) {
+    console.error("❌ Download error:", error);
     res.status(500).json({ message: "Server Error" });
   }
 };
 
-// Upload Excel
+// ✅ Upload Excel (shared)
 exports.uploadExpenseExcel = async (req, res) => {
   const userId = req.user.id;
 
@@ -124,8 +130,7 @@ exports.uploadExpenseExcel = async (req, res) => {
 
     const expenses = [];
 
-    // Allowed expense types
-    const ALLOWED_TYPES = ["CAPEX", "OPEX", "Transport Fee"];
+    const ALLOWED_TYPES = ["CAPEX", "OPEX", "Transport Fees"];
 
     for (const row of rows) {
       const {
@@ -142,12 +147,10 @@ exports.uploadExpenseExcel = async (req, res) => {
 
       if (!Source || !Category || !Amount || !Name || !DateField) continue;
 
-      // ✅ Validate Type
       const cleanType = ALLOWED_TYPES.includes(String(Type).trim())
         ? String(Type).trim()
-        : "CAPEX"; // fallback if invalid or missing
+        : "CAPEX";
 
-      // Parse Excel date or ISO string
       let parsedDate;
       if (typeof DateField === "number") {
         const excelEpoch = new Date(Date.UTC(1899, 11, 30));
@@ -158,20 +161,19 @@ exports.uploadExpenseExcel = async (req, res) => {
       }
 
       const normalizedDate = parsedDate.toISOString().split("T")[0];
-
       const amountNum = Number(Amount);
       const paidPercent = Number(PercentagePaid) || 0;
       const balance = amountNum - (amountNum * paidPercent) / 100;
 
       expenses.push({
-        userId,
+        userId, // record uploader
         source: String(Source).trim(),
         category: String(Category).trim(),
         amount: amountNum,
         name: String(Name).trim(),
         date: normalizedDate,
         icons: Icons || null,
-        type: cleanType, // ✅ safe validated type
+        type: cleanType,
         percentagePaid: paidPercent,
         balanceAmount: balance,
         externalId: ExternalId ? String(ExternalId).trim() : undefined,
@@ -179,17 +181,13 @@ exports.uploadExpenseExcel = async (req, res) => {
     }
 
     if (!expenses.length) {
-      return res
-        .status(400)
-        .json({ message: "No valid rows found in uploaded file" });
+      return res.status(400).json({ message: "No valid rows found in file" });
     }
 
-    // Bulk write
     const operations = expenses.map((exp) => {
       const filter = exp.externalId
-        ? { userId: exp.userId, externalId: exp.externalId }
+        ? { externalId: exp.externalId }
         : {
-            userId: exp.userId,
             source: exp.source,
             name: exp.name,
             category: exp.category,
@@ -201,19 +199,19 @@ exports.uploadExpenseExcel = async (req, res) => {
           filter,
           update: {
             $setOnInsert: {
-              userId: exp.userId,
               source: exp.source,
               category: exp.category,
               name: exp.name,
               date: exp.date,
               icons: exp.icons,
               externalId: exp.externalId,
+              userId: exp.userId,
             },
             $set: {
-              amount: exp.amount, // ✅ Update amount if it changes
+              amount: exp.amount,
               percentagePaid: exp.percentagePaid,
               balanceAmount: exp.balanceAmount,
-              type: exp.type, // ✅ Now updates Type safely
+              type: exp.type,
             },
           },
           upsert: true,
@@ -231,17 +229,16 @@ exports.uploadExpenseExcel = async (req, res) => {
       updated: result.modifiedCount,
     });
   } catch (error) {
-    console.error("Upload error:", error);
+    console.error("❌ Upload error:", error);
     res
       .status(500)
       .json({ message: "Error uploading expenses", error: error.message });
   }
 };
 
-// GET report of expenses (JSON)
+// ✅ Get Report (shared)
 exports.getExpensesReport = async (req, res) => {
   try {
-    const userId = req.user.id;
     const {
       name,
       source,
@@ -255,14 +252,11 @@ exports.getExpensesReport = async (req, res) => {
       order = "desc",
     } = req.query;
 
-    // Base filter
-    const baseFilter = { userId };
+    const baseFilter = {};
 
     if (name) baseFilter.name = new RegExp(name, "i");
     if (source) baseFilter.source = new RegExp(source, "i");
     if (type) baseFilter.type = type;
-
-    // Search across multiple fields
     if (search) {
       baseFilter.$or = [
         { name: new RegExp(search, "i") },
@@ -271,62 +265,47 @@ exports.getExpensesReport = async (req, res) => {
       ];
     }
 
-    // Date range filter (use the actual `date` field, not createdAt)
     if (dateFrom || dateTo) {
       baseFilter.date = {};
       if (dateFrom) baseFilter.date.$gte = new Date(dateFrom);
       if (dateTo) {
         const d = new Date(dateTo);
-        d.setHours(23, 59, 59, 999); // include the full "to" day
+        d.setHours(23, 59, 59, 999);
         baseFilter.date.$lte = d;
       }
     }
 
-    // Pagination
     const p = Math.max(1, parseInt(page, 10) || 1);
     const lim = Math.max(1, Math.min(5000, parseInt(limit, 10) || 1000));
     const skip = (p - 1) * lim;
 
-    // Sort
     const sortOrder = order === "asc" ? 1 : -1;
     const sort = { [sortBy]: sortOrder };
 
-    // Query
     const [expenses, total] = await Promise.all([
-      Expense.find(baseFilter).sort(sort).skip(skip).limit(lim).lean().exec(),
+      Expense.find(baseFilter).sort(sort).skip(skip).limit(lim).lean(),
       Expense.countDocuments(baseFilter),
     ]);
 
-    res.json({
-      expenses,
-      total,
-      page: p,
-      limit: lim,
-    });
+    res.json({ expenses, total, page: p, limit: lim });
   } catch (err) {
-    console.error("getExpensesReport error:", err);
-    res
-      .status(500)
-      .json({
-        message: "Error fetching report of expenses",
-        error: err.message,
-      });
+    console.error("❌ getExpensesReport error:", err);
+    res.status(500).json({
+      message: "Error fetching report of expenses",
+      error: err.message,
+    });
   }
 };
 
-// DOWNLOAD filtered expenses as Excel
+// ✅ Download Filtered Report (shared)
 exports.downloadExpensesReport = async (req, res) => {
   try {
-    const userId = req.user.id;
     const { name, source, type, dateFrom, dateTo, search } = req.query;
 
-    // Base filter
-    const baseFilter = { userId };
+    const baseFilter = {};
     if (name) baseFilter.name = new RegExp(name, "i");
     if (source) baseFilter.source = new RegExp(source, "i");
     if (type) baseFilter.type = type;
-
-    // Search across multiple fields
     if (search) {
       baseFilter.$or = [
         { name: new RegExp(search, "i") },
@@ -335,21 +314,18 @@ exports.downloadExpensesReport = async (req, res) => {
       ];
     }
 
-    // Date range filter
     if (dateFrom || dateTo) {
       baseFilter.date = {};
       if (dateFrom) baseFilter.date.$gte = new Date(dateFrom);
       if (dateTo) {
         const d = new Date(dateTo);
-        d.setHours(23, 59, 59, 999); // include the full "to" day
+        d.setHours(23, 59, 59, 999);
         baseFilter.date.$lte = d;
       }
     }
 
-    // Query
     const expenses = await Expense.find(baseFilter).sort({ date: -1 }).lean();
 
-    // Transform for Excel
     const data = expenses.map((e) => ({
       Source: e.source,
       Category: e.category,
@@ -359,9 +335,9 @@ exports.downloadExpensesReport = async (req, res) => {
       Date: e.date ? new Date(e.date).toISOString().split("T")[0] : "",
       PercentagePaid: e.percentagePaid,
       BalanceAmount: e.balanceAmount,
+      AddedBy: e.userId || "Unknown",
     }));
 
-    // Generate Excel
     const wb = xlsx.utils.book_new();
     const ws = xlsx.utils.json_to_sheet(data);
     xlsx.utils.book_append_sheet(wb, ws, "Expenses");
@@ -379,9 +355,7 @@ exports.downloadExpensesReport = async (req, res) => {
 
     res.send(buffer);
   } catch (err) {
-    console.error("downloadExpensesReport error:", err);
-    res
-      .status(500)
-      .json({ message: "Error downloading expenses", error: err.message });
+    console.error("❌ downloadExpensesReport error:", err);
+    res.status(500).json({ message: "Error downloading expenses", error: err.message });
   }
 };

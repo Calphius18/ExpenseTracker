@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
+import { UserContext } from "../../context/UserContext";
 import DashboardLayout from "../../components/layouts/DashboardLayout";
 import { useUserAuth } from "../../hooks/useUserAuth";
 import { API_ENDPOINTS } from "../../utils/apiPaths";
@@ -12,6 +13,8 @@ import DeleteAlert from "../../components/DeleteAlert";
 
 const Expense = () => {
   useUserAuth();
+  const { user, hasRole } = useContext(UserContext);
+  console.log(user);
 
   const [expenseData, setExpenseData] = useState([]);
 
@@ -47,138 +50,138 @@ const Expense = () => {
 
   // Add Expense
   const addExpense = async (expense) => {
-  const { source, name, amount, category, date, icon, type, percentagePaid } = expense;
+    const { source, name, amount, category, date, icon, type, percentagePaid } =
+      expense;
 
-  // Validation
-  console.log("Source value:", source);
-  if (!source.trim()) {
-    toast.error("Source is required");
-    return;
-  }
-  if (!name.trim()) {
-    toast.error("Name is required");
-    return;
-  }
-  if (!category.trim()) {
-    toast.error("Category is required");
-    return;
-  }
-  if (!amount || isNaN(amount) || Number(amount) <= 0) {
-    toast.error("Amount should be a valid number greater than 0.");
-    return;
-  }
-  if (!date) {
-    toast.error("Date is required.");
-    return;
-  }
-  if (percentagePaid < 0 || percentagePaid > 100) {
-    toast.error("Percentage Paid must be between 0 and 100.");
-    return;
-  }
-  if (!type) {
-    toast.error("Expense Type is required.");
-    return;
-  }
+    // Validation
+    console.log("Source value:", source);
+    if (!source.trim()) {
+      toast.error("Source is required");
+      return;
+    }
+    if (!name.trim()) {
+      toast.error("Name is required");
+      return;
+    }
+    if (!category.trim()) {
+      toast.error("Category is required");
+      return;
+    }
+    if (!amount || isNaN(amount) || Number(amount) <= 0) {
+      toast.error("Amount should be a valid number greater than 0.");
+      return;
+    }
+    if (!date) {
+      toast.error("Date is required.");
+      return;
+    }
+    if (percentagePaid < 0 || percentagePaid > 100) {
+      toast.error("Percentage Paid must be between 0 and 100.");
+      return;
+    }
+    if (!type) {
+      toast.error("Expense Type is required.");
+      return;
+    }
 
-  try {
-    await axiosInstance.post(API_ENDPOINTS.EXPENSE.ADD_EXPENSE, {
-      source,
-      category,
-      amount,
-      date,
-      name,
-      icon,
-      type,             // send type
-      percentagePaid,   // send percentagePaid
-    });
+    try {
+      await axiosInstance.post(API_ENDPOINTS.EXPENSE.ADD_EXPENSE, {
+        source,
+        category,
+        amount,
+        date,
+        name,
+        icon,
+        type, // send type
+        percentagePaid, // send percentagePaid
+      });
 
-    setOpenAddExpenseModal(false);
-    toast.success("Expense Added Successfully");
-    fetchExpenseDetails();
-  } catch (error) {
-    console.error(
-      "Error Adding Expense:",
-      error.response?.data?.message || error.message
-    );
-  }
-};
-
+      setOpenAddExpenseModal(false);
+      toast.success("Expense Added Successfully");
+      fetchExpenseDetails();
+    } catch (error) {
+      console.error(
+        "Error Adding Expense:",
+        error.response?.data?.message || error.message
+      );
+    }
+  };
 
   // Delete Expense
   const deleteExpense = async (id) => {
     try {
       await axiosInstance.delete(API_ENDPOINTS.EXPENSE.DELETE_EXPENSE(id));
 
-      setOpenDeleteAlert({ show : false, data: null});
+      setOpenDeleteAlert({ show: false, data: null });
       toast.success("Expense Deleted Successfully");
       fetchExpenseDetails();
     } catch (error) {
-      console.error("Error Deleting Expense:", error.response.data?.message || error.message);
+      console.error(
+        "Error Deleting Expense:",
+        error.response.data?.message || error.message
+      );
     }
-  }
+  };
 
   // Download Expenses
-  const downloadExpenseDetails = async ()=> {
+  const downloadExpenseDetails = async () => {
     try {
       const response = await axiosInstance.get(
-        API_ENDPOINTS.EXPENSE.DOWNLOAD_EXCEL_EXPENSE, {
-          responseType: "blob"
+        API_ENDPOINTS.EXPENSE.DOWNLOAD_EXCEL_EXPENSE,
+        {
+          responseType: "blob",
         }
       );
 
       // Create the URL for the Binary Large Object(blob)
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
-      
+
       link.href = url;
-      link.setAttribute("download","expense_details.xlsx");
+      link.setAttribute("download", "expense_details.xlsx");
 
       document.body.appendChild(link);
-      
+
       link.click();
       link.parentNode.removeChild(link);
-      
-      window.URL.revokeObjectURL(url);
 
+      window.URL.revokeObjectURL(url);
     } catch (error) {
       console.error("Error downloading expense details", error);
-      toast.error("Failed to download expense details. Please try again")
+      toast.error("Failed to download expense details. Please try again");
     }
-  }
+  };
 
   // Upload Expenses
-// Upload Expenses
-const uploadExpenseDetails = async (file) => {
-  if (!file) {
-    toast.error("Please select a file to upload");
-    return;
-  }
+  // Upload Expenses
+  const uploadExpenseDetails = async (file) => {
+    if (!file) {
+      toast.error("Please select a file to upload");
+      return;
+    }
 
-  const formData = new FormData();
-  formData.append("file", file);
+    const formData = new FormData();
+    formData.append("file", file);
 
-  try {
-    const response = await axiosInstance.post(
-      API_ENDPOINTS.EXPENSE.UPLOAD_EXCEL_EXPENSE,
-      formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
-    );
+    try {
+      const response = await axiosInstance.post(
+        API_ENDPOINTS.EXPENSE.UPLOAD_EXCEL_EXPENSE,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
 
-    const { message, totalRows, attempted } = response.data;
+      const { message, totalRows, attempted } = response.data;
 
-    toast.success(
-      `${message}\nTotal Rows: ${totalRows}\nProcessed: ${attempted}`
-    );
+      toast.success(
+        `${message}\nTotal Rows: ${totalRows}\nProcessed: ${attempted}`
+      );
 
-    fetchExpenseDetails(); // Refresh list after upload
-  } catch (error) {
-    console.error("Error uploading expenses:", error);
-    toast.error(error.response?.data?.message || "Failed to upload file");
-  }
-};
-
-
-
+      fetchExpenseDetails(); // Refresh list after upload
+    } catch (error) {
+      console.error("Error uploading expenses:", error);
+      toast.error(error.response?.data?.message || "Failed to upload file");
+    }
+  };
 
   useEffect(() => {
     fetchExpenseDetails();
@@ -191,23 +194,32 @@ const uploadExpenseDetails = async (file) => {
       <div className="my-5 mx-auto">
         <div className="grid grid-cols-1 gap-6">
           <div className="">
-            <ExpenseOverview
-              transactions={expenseData}
-              onAddExpense={() => {
-                setOpenAddExpenseModal(true);
-              }}
-            />
+            {(user?.role === "admin" || user?.role === "user" || user?.role === "viewer") && (
+              <ExpenseOverview
+                transactions={expenseData}
+                onAddExpense={() => {
+                  if (!hasRole(["user", "admin"]))
+                    return toast.error("You are not allowed to add expenses.");
+                  setOpenAddExpenseModal(true);
+                }}
+              />
+            )}
           </div>
 
           <ExpenseList
             transactions={expenseData}
             onDelete={(id) => {
-              setOpenDeleteAlert({ show : true, data: id});
+              if (!hasRole(["admin"]))
+                return toast.error("Only admins can delete expenses.");
+              setOpenDeleteAlert({ show: true, data: id });
             }}
             onDownload={downloadExpenseDetails}
-            onUpload={uploadExpenseDetails}
+            onUpload={(file) => {
+              if (!hasRole(["user", "admin"]))
+                return toast.error("You cannot upload expenses.");
+              uploadExpenseDetails(file);
+            }}
           />
-
         </div>
 
         <Modal
@@ -220,8 +232,7 @@ const uploadExpenseDetails = async (file) => {
 
         <Modal
           isOpen={openDeleteAlert.show}
-          onClose={() => setOpenDeleteAlert({show:false, data: null})
-        }
+          onClose={() => setOpenDeleteAlert({ show: false, data: null })}
           title="Delete Expense"
         >
           <DeleteAlert
@@ -229,8 +240,6 @@ const uploadExpenseDetails = async (file) => {
             onDelete={() => deleteExpense(openDeleteAlert.data)}
           />
         </Modal>
-
-
       </div>
     </DashboardLayout>
   );
