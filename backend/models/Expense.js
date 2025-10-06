@@ -1,5 +1,3 @@
-// backend/models/Expense.js
-
 const mongoose = require("mongoose");
 
 const ExpenseSchema = new mongoose.Schema(
@@ -7,7 +5,7 @@ const ExpenseSchema = new mongoose.Schema(
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: false,
     },
     icons: {
       type: String,
@@ -18,7 +16,7 @@ const ExpenseSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["CAPEX", "OPEX", "Transport Fees"],
+      enum: ["CAPEX", "OPEX", "Transport Fee"],
       default: "CAPEX",
     },
     category: {

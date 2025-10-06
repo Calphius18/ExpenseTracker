@@ -7,7 +7,7 @@ const TransactionInfoCard = ({
   date,
   amount,
   type,
-  hideDeleteBtn,
+  disableDelete, // ✅ renamed (was hideDeleteBtn)
   onDelete,
 }) => {
   const getAmountStyles = () =>
@@ -43,7 +43,7 @@ const TransactionInfoCard = ({
         </div>
 
         {/* Delete button */}
-        {!hideDeleteBtn && (
+        {!disableDelete && ( // ✅ only show for admins
           <>
             {/* Mobile: Full red button */}
             <button
@@ -53,6 +53,7 @@ const TransactionInfoCard = ({
               <Trash2 size={16} />
               Delete
             </button>
+
             {/* Desktop: Subtle icon-only with tooltip */}
             <div className="hidden md:flex relative group/icon">
               <button
