@@ -14,32 +14,32 @@ const TransactionInfoCard = ({
     type === "budget" ? "bg-green-50 text-green-500" : "bg-red-50 text-red-500";
 
   return (
-    <div className="group relative flex items-center gap-4 mt-2 p-3 rounded-lg hover:bg-gray-100/60">
+    <div className="group relative flex items-center gap-4 mt-2 p-3 rounded-2xl hover:bg-gray-50/80 border border-transparent hover:border-gray-100 transition-all duration-300">
       {/* Icon */}
-      <div className="w-12 h-12 flex items-center justify-center text-xl text-gray-800 bg-gray-100 rounded-full">
+      <div className="w-12 h-12 flex items-center justify-center text-xl text-gray-800 bg-slate-100/50 rounded-xl group-hover:scale-110 transition-transform">
         {icon ? (
-          <img src={icon} alt={title} className="w-6 h-6" />
+          <img src={icon} alt={title} className="w-6 h-6 object-contain" />
         ) : (
-          <ArrowRightLeft />
+          <ArrowRightLeft className="text-slate-400" size={20} />
         )}
       </div>
 
       {/* Details */}
       <div className="flex-1">
-        <p className="text-sm text-gray-700 font-medium">{title}</p>
-        <p className="text-xs text-gray-400 mt-1">{date}</p>
+        <p className="text-sm text-slate-700 font-semibold group-hover:text-primary transition-colors">{title}</p>
+        <p className="text-[11px] text-slate-400 mt-0.5 font-medium">{date}</p>
       </div>
 
       {/* Amount + Delete */}
-      <div className="flex flex-col items-end md:flex-row md:items-center gap-2">
+      <div className="flex flex-col items-end md:flex-row md:items-center gap-3">
         {/* Amount */}
         <div
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-md ${getAmountStyles()}`}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-xl ${getAmountStyles()}`}
         >
-          <h6 className="text-xs font-medium whitespace-nowrap">
+          <h6 className="text-[13px] font-bold whitespace-nowrap">
             {type === "budget" ? "+" : "-"} ₦{amount}
           </h6>
-          {type === "budget" ? <TrendingUp /> : <TrendingDown />}
+          {type === "budget" ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
         </div>
 
         {/* Delete button */}

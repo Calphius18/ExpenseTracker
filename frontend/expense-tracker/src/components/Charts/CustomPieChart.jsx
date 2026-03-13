@@ -11,17 +11,23 @@ import CustomTooltip from "./CustomTooltip";
 import CustomLegend from "./CustomLegend";
 
 const CustomPieChart = ({
-  data,
+  data = [],
   label,
   totalAmount,
-  colors,
+  colors = [],
   showTextAnchor,
 }) => {
 
-  
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[350px] text-gray-400 bg-gray-50/50 rounded-[20px] border border-dashed border-gray-200">
+        <p className="text-sm">No data available for {label}</p>
+      </div>
+    );
+  }
 
   return (
-    <ResponsiveContainer width="100%" height={350} className=" mt-3 items-center justify-center">
+    <ResponsiveContainer width="100%" height={350} className="mt-3">
       <PieChart>
         <Pie
           data={data}
@@ -31,25 +37,32 @@ const CustomPieChart = ({
           cy="50%"
           outerRadius={130}
           innerRadius={100}
+          paddingAngle={5}
           labelLine={false}
         >
           {data.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />
+            <Cell
+              key={`cell-${index}`}
+              fill={colors[index % colors.length] || "#CBD5E1"}
+              stroke="none"
+              className="hover:opacity-80 transition-opacity cursor-pointer outline-none"
+            />
           ))}
         </Pie>
 
-        <Tooltip content={CustomTooltip}/>
-        <Legend content={CustomLegend}/>
+        <Tooltip content={CustomTooltip} />
+        <Legend content={CustomLegend} verticalAlign="bottom" />
 
         {showTextAnchor && (
-          <>
+          <g>
             <text
               x="50%"
               y="50%"
               dy={-25}
               textAnchor="middle"
-              fill="#999"
+              fill="#94A3B8"
               fontSize="14px"
+              fontWeight="medium"
             >
               {label}
             </text>
@@ -57,15 +70,15 @@ const CustomPieChart = ({
             <text
               x="50%"
               y="50%"
-              dy={8}
+              dy={12}
               textAnchor="middle"
-              fill="#222"
+              fill="#1E293B"
               fontSize="24px"
-              fontWeight="semi-bold"
+              fontWeight="bold"
             >
               ₦{totalAmount}
             </text>
-          </>
+          </g>
         )}
       </PieChart>
     </ResponsiveContainer>

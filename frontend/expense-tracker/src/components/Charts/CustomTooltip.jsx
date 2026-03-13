@@ -3,13 +3,13 @@ import React from "react";
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white shadow-md rounded-lg p-2 border border-gray-300">
-        <p className="text-xs font-semibold text-orange-800 mb-1">
+      <div className="bg-white/90 backdrop-blur-md shadow-xl rounded-xl p-3 border border-gray-100">
+        <p className="text-xs font-bold text-primary mb-1 uppercase tracking-wider">
           {payload[0].payload.category || payload[0].payload.name}
         </p>
-        <p className="text-sm text-gray-600">
+        <p className="text-sm font-semibold text-gray-700">
           Amount:{" "}
-          <span className="text-sm font-medium text-gray-900">
+          <span className="text-lg font-bold text-gray-900">
             ₦{payload[0].payload.amount}
           </span>
         </p>

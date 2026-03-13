@@ -1,35 +1,30 @@
 import React, { useEffect, useState } from "react";
 import { prepareExpenseLineChartData } from "../../utils/helper";
-import { Plus } from "lucide-react";
 import CustomLineChart from "../Charts/CustomLineChart";
 
-const ExpenseOverview = ({ transactions, onAddExpense }) => {
+const ExpenseOverview = ({ transactions }) => {
   const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
     const result = prepareExpenseLineChartData(transactions);
     setChartData(result);
-
-    return () => {};
   }, [transactions]);
 
   return (
-    <div className="card">
-      <div className="flex items-center justify-between">
-        <div className="">
-          <h5 className="text-lg">Expense Overview</h5>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Keep Track And Analyze Of Your Expense Trends
-          </p>
-        </div>
-
-        <button className="add-btn" onClick={onAddExpense}>
-          <Plus className="text-lg" />
-          Add Expense
-        </button>
+    <div className="card glass-card border-none shadow-2xl shadow-slate-200/50 overflow-hidden relative">
+      <div className="absolute top-0 right-0 p-8 opacity-5">
+        <div className="w-32 h-32 bg-primary rounded-full blur-3xl"></div>
       </div>
 
-      <div className="mt-10">
+      <div className="relative z-10">
+        <h5 className="text-xl font-bold text-slate-800">Expense Trends</h5>
+        <p className="text-sm text-slate-500 mt-1">
+          Analyze your spending patterns over time
+        </p>
+      </div>
+
+      <div className="mt-8 relative z-10 min-h-[300px]">
+        {/* We keep LineChart but ensure it's in a stable container */}
         <CustomLineChart data={chartData} />
       </div>
     </div>
