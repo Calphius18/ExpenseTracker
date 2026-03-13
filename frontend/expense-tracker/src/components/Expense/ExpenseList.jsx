@@ -1,24 +1,13 @@
-import React, { useRef, useContext } from "react";
-import { Download, Upload } from "lucide-react";
+import React, { useContext } from "react";
 import TransactionInfoCard from "../Cards/TransactionInfoCard";
 import moment from "moment";
 import { UserContext } from "../../context/UserContext";
 import toast from "react-hot-toast";
+import { ReceiptText } from "lucide-react";
 
-const ExpenseList = ({ transactions, onDelete, onDownload, onUpload }) => {
-  const fileInputRef = useRef(null);
+const ExpenseList = ({ transactions, onDelete }) => {
   const { hasRole } = useContext(UserContext);
-
-  // ✅ Role Checks
-  const isViewer = !hasRole(["user", "admin"]);
   const isAdmin = hasRole(["admin"]);
-
-  const handleFileChange = (e) => {
-    if (e.target.files.length > 0) {
-      onUpload(e.target.files[0]);
-      e.target.value = ""; // reset input
-    }
-  };
 
   const handleDelete = (id) => {
     if (!isAdmin) {
@@ -28,51 +17,26 @@ const ExpenseList = ({ transactions, onDelete, onDownload, onUpload }) => {
     onDelete(id);
   };
 
-  return (
-    <div className="card">
-      <div className="flex items-center justify-between">
-        <h5 className="text-lg">Expense Details</h5>
-
-        {/* Upload/Download controls */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:gap-3 gap-3 w-auto sm:w-auto mt-3 sm:mt-0">
-          {/* Hidden file input */}
-          <input
-            type="file"
-            accept=".xlsx,.xls,.csv"
-            ref={fileInputRef}
-            className="hidden"
-            onChange={handleFileChange}
-            disabled={isViewer} // viewers can't upload
-          />
-
-          {/* Upload button */}
-          <button
-            className={`card-btn w-full sm:w-auto flex items-center justify-center ${
-              isViewer ? "opacity-50 cursor-not-allowed" : ""
-            }`}
-            onClick={() => {
-              if (isViewer) {
-                toast.error("You do not have permission to upload files.");
-                return;
-              }
-              fileInputRef.current.click();
-            }}
-          >
-            <Upload className="text-base" /> Upload
-          </button>
-
-          {/* Download button (open to all) */}
-          <button
-            className="card-btn w-full sm:w-auto flex items-center justify-center"
-            onClick={onDownload}
-          >
-            <Download className="text-base" /> Download
-          </button>
+  if (!transactions || transactions.length === 0) {
+    return (
+      <div className="card flex flex-col items-center justify-center p-20 text-slate-400">
+        <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-4">
+          <ReceiptText className="text-slate-300 w-8 h-8" />
         </div>
+        <p className="text-sm font-medium">No expenses found</p>
+        <p className="text-xs mt-1">Try adjusting your filters or add a new expense.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="card overflow-hidden">
+      <div className="mb-6">
+        <h5 className="text-xl font-bold text-slate-800">Expense Details</h5>
+        <p className="text-sm text-slate-500">View and manage your transaction history</p>
       </div>
 
-      {/* Expense cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 mt-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         {transactions?.map((expense) => (
           <TransactionInfoCard
             key={expense._id}
@@ -82,7 +46,7 @@ const ExpenseList = ({ transactions, onDelete, onDownload, onUpload }) => {
             amount={expense.amount}
             type="expense"
             onDelete={() => handleDelete(expense._id)}
-            disableDelete={!isAdmin} // pass prop to hide delete icon
+            disableDelete={!isAdmin}
           />
         ))}
       </div>

@@ -8,6 +8,7 @@ const budgetRoutes = require("./routes/budgetRoutes");
 const expenseRoutes = require("./routes/expenseRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes")
 const adminRoutes = require("./routes/adminRoutes");
+const errorMiddleware = require("./middleware/errorMiddleware");
 const app = express();
 
 app.use(
@@ -29,6 +30,8 @@ app.use("/api/v1/budget", budgetRoutes);
 app.use("/api/v1/expense", expenseRoutes);
 app.use("/api/v1/dashboard", dashboardRoutes);
 app.use("/api/v1/admin", adminRoutes);
+
+app.use(errorMiddleware);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

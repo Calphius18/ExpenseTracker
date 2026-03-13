@@ -5,6 +5,9 @@
     --font-display: 'Rubik', sans-serif;
     --breakpoint-3xl: 1920px;
     --color-primary: #f5875c;
+    --color-secondary: #2dd4bf;
+    --color-accent: #6366f1;
+    --color-surface: rgba(255, 255, 255, 0.8);
 }
 
 @layer base {
@@ -13,8 +16,11 @@
     }
 
     body {
-        background-color: #fcfcfb;
+        background-color: #f8f9fa;
+        background-image: radial-gradient(at 0% 0%, rgba(245, 135, 92, 0.05) 0px, transparent 50%),
+            radial-gradient(at 100% 0%, rgba(45, 212, 191, 0.05) 0px, transparent 50%);
         overflow-x: hidden;
+        min-height: 100vh;
     }
 }
 
@@ -27,7 +33,27 @@
 }
 
 .card {
-    @apply bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/70;  
+    @apply bg-white p-6 rounded-2xl shadow-md shadow-gray-100 border border-gray-200/70 transition-all duration-300;
+}
+
+.glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
 }
 
 .card-btn {
@@ -37,6 +63,7 @@
 .add-btn {
     @apply flex items-center gap-1.5 text-xs md:text-sm font-medium text-orange-600 whitespace-nowrap bg-orange-50 border-orange-100 rounded-lg px-4 py-2 cursor-pointer;
 }
+
 .add-btn-fill {
     @apply text-white bg-primary
 }

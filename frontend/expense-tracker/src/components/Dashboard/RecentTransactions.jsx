@@ -3,11 +3,11 @@ import React from "react";
 import moment from "moment";
 import TransactionInfoCard from "../Cards/TransactionInfoCard";
 
-const RecentTransactions = ({ transactions}) => {
+const RecentTransactions = ({ transactions }) => {
   return (
-    <div className="card">
-      <div className="flex items-center justify-between">
-        <h6 className="text-lg">Recent Transactions</h6>
+    <div className="card hover:shadow-lg transition-all duration-300">
+      <div className="flex items-center justify-between mb-6">
+        <h6 className="text-xl font-bold text-gray-800">Recent Transactions</h6>
       </div>
 
       <div className="mt-6">

@@ -5,9 +5,9 @@ import moment from "moment";
 
 const RecentBudget = ({ transactions, onSeeMore }) => {
   return (
-    <div className="card">
-      <div className="flex items-center justify-between">
-        <h5 className="text-lg">Budget</h5>
+    <div className="card hover:shadow-lg transition-all duration-300">
+      <div className="flex items-center justify-between mb-6">
+        <h5 className="text-xl font-bold text-gray-800">Recent Budgets</h5>
 
         <button className="card-btn" onClick={onSeeMore}>
           See All <ArrowRight className="text-base" />
@@ -15,16 +15,16 @@ const RecentBudget = ({ transactions, onSeeMore }) => {
       </div>
 
       <div className="mt-6">
-        {transactions?.slice(0,5)?.map((item) => (
-            <TransactionInfoCard
-                key={item._id}
-                title={item.category+" -> "+item.source}
-                icon={item.icon}
-                date={moment(item.date).format("Do MMM YYYY")}
-                amount={item.amount}
-                type="budget"
-                hideDeleteBtn
-                />
+        {transactions?.slice(0, 5)?.map((item) => (
+          <TransactionInfoCard
+            key={item._id}
+            title={item.category + " -> " + item.source}
+            icon={item.icon}
+            date={moment(item.date).format("Do MMM YYYY")}
+            amount={item.amount}
+            type="budget"
+            hideDeleteBtn
+          />
         ))}
       </div>
     </div>

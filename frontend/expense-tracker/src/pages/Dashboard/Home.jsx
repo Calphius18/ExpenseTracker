@@ -1,18 +1,16 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import DashboardLayout from "../../components/layouts/DashboardLayout";
 import { useUserAuth } from "../../hooks/useUserAuth";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
 import { API_ENDPOINTS } from "../../utils/apiPaths";
-import { CreditCard, Wallet, HandCoins } from "lucide-react";
+import { CreditCard, HandCoins } from "lucide-react";
 import { addThousandsSeparator } from "../../utils/helper";
 import InfoCard from "../../components/Cards/InfoCard";
 import RecentTransactions from "../../components/Dashboard/RecentTransactions";
 import FinanceOverview from "../../components/Dashboard/FinanceOverview";
 import ExpenseTransactions from "../../components/Dashboard/ExpenseTransactions";
-import RecentBudgetWithChart from "../../components/Dashboard/RecentBudgetWithChart";
 import Last30DaysExpenses from "../../components/Dashboard/Last30DaysExpenses";
-import RecentBudget from "../../components/Dashboard/RecentBudget";
 
 const Home = () => {
   useUserAuth();
@@ -22,7 +20,7 @@ const Home = () => {
   const [dashboardData, setDashboardData] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = useCallback(async () => {
     if (loading) return;
 
     setLoading(true);
@@ -40,69 +38,48 @@ const Home = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [loading]);
 
   useEffect(() => {
     fetchDashboardData();
-    return () => {};
-  }, []);
+  }, [fetchDashboardData]);
 
   return (
     <DashboardLayout activeMenu="Dashboard">
-      <div className="my-5 mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* <InfoCard
-            icon={<CreditCard />}
-            label="Total Balance"
-            value={addThousandsSeparator(dashboardData?.totalBalance || 0)}
-            color="bg-primary"
-          /> */}
-
-          {/* <InfoCard
-            icon={<Wallet />}
-            label="Total Budget"
-            value={addThousandsSeparator(dashboardData?.totalBudget || 0)}
-            color="bg-green-500"
-          /> */}
-
+      <div className="my-8 mx-auto animate-fade-in-up">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <InfoCard
             icon={<HandCoins />}
             label="Total Expense"
             value={addThousandsSeparator(dashboardData?.totalExpenses || 0)}
             color="bg-red-500"
           />
+
+          <InfoCard
+            icon={<CreditCard />}
+            label="Last 30 Days Spend"
+            value={addThousandsSeparator(dashboardData?.last30DaysExpenses?.total || 0)}
+            color="bg-accent"
+          />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-          <RecentTransactions
-            transactions={dashboardData?.recentTransactions}
-          />
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
           <FinanceOverview
-            totalBalance={dashboardData?.totalBalance || 0}
-            totalBudget={dashboardData?.totalBudget || 0}
-            totalExpense={dashboardData?.totalExpenses || 0}
-          />
-
-          <ExpenseTransactions
             transactions={dashboardData?.last30DaysExpenses?.transactions || []}
-            onSeeMore={() => navigate("/expense")}
+            totalExpense={dashboardData?.totalExpenses || 0}
           />
 
           <Last30DaysExpenses
             data={dashboardData?.last30DaysExpenses?.transactions || []}
           />
-          
-          <RecentBudget
-            transactions={dashboardData?.last60DaysBudget?.transactions || []}
-            onSeeMore={() => navigate("/budget")}
+
+          <RecentTransactions
+            transactions={dashboardData?.recentTransactions}
           />
 
-          <RecentBudgetWithChart
-            data={
-              dashboardData?.last60DaysBudget?.transactions?.slice(0, 4) || []
-            }
-            totalBudget={dashboardData?.totalBudget || 0}
+          <ExpenseTransactions
+            transactions={dashboardData?.last30DaysExpenses?.transactions || []}
+            onSeeMore={() => navigate("/expense")}
           />
         </div>
       </div>

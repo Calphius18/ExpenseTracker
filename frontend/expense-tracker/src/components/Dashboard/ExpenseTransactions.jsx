@@ -5,9 +5,9 @@ import moment from "moment";
 
 const ExpenseTransactions = ({ transactions, onSeeMore }) => {
   return (
-    <div className="card">
-      <div className="flex items-center justify-between">
-        <h5 className="text-lg">Expenses</h5>
+    <div className="card hover:shadow-lg transition-all duration-300">
+      <div className="flex items-center justify-between mb-6">
+        <h5 className="text-xl font-bold text-gray-800">Expenses</h5>
 
         <button className="card-btn" onClick={onSeeMore}>
           See All <ArrowRight className="text-base" />
@@ -18,7 +18,7 @@ const ExpenseTransactions = ({ transactions, onSeeMore }) => {
         {transactions?.slice(0, 4)?.map((expense) => (
           <TransactionInfoCard
             key={expense._id}
-            title={expense.category + " -> " +expense.source}
+            title={expense.category + " -> " + expense.source}
             icon={expense.icon}
             date={moment(expense.date).format("Do MMM YYYY")}
             amount={expense.amount}

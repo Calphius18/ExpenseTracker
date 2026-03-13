@@ -1,24 +1,34 @@
-import React, { useEffect, useState, useContext } from "react";
+import ExpenseHeader from "../../components/Expense/ExpenseHeader";
+import ExpenseFilters from "../../components/Expense/ExpenseFilters";
+import React, { useState, useContext, useRef, useMemo } from "react";
 import { UserContext } from "../../context/UserContext";
 import DashboardLayout from "../../components/layouts/DashboardLayout";
 import { useUserAuth } from "../../hooks/useUserAuth";
-import { API_ENDPOINTS } from "../../utils/apiPaths";
-import axiosInstance from "../../utils/axiosInstance";
+import { useExpenses } from "../../hooks/useExpenses";
 import ExpenseOverview from "../../components/Expense/ExpenseOverview";
 import AddExpenseForm from "../../components/Expense/AddExpenseForm";
 import Modal from "../../components/Modal";
 import toast from "react-hot-toast";
-import ExpenseList from "../../components/Expense/ExpenseList";
+import ExpenseTable from "../../components/Expense/ExpenseTable";
 import DeleteAlert from "../../components/DeleteAlert";
+import moment from "moment";
 
 const Expense = () => {
   useUserAuth();
-  const { user, hasRole } = useContext(UserContext);
-  console.log(user);
+  const { hasRole } = useContext(UserContext);
+  const fileInputRef = useRef(null);
 
-  const [expenseData, setExpenseData] = useState([]);
+  const {
+    expenseData,
+    addExpense,
+    deleteExpense,
+    downloadExpenses,
+    uploadExpenses,
+  } = useExpenses();
 
-  const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [category, setCategory] = useState("");
+  const [dateRange, setDateRange] = useState({ start: "", end: "" });
 
   const [openDeleteAlert, setOpenDeleteAlert] = useState({
     show: false,
@@ -27,199 +37,94 @@ const Expense = () => {
 
   const [openAddExpenseModal, setOpenAddExpenseModal] = useState(false);
 
-  //Fetching ALL Expense Details
-  const fetchExpenseDetails = async () => {
-    if (loading) return;
+  const handleAddExpense = async (expense) => {
+    const success = await addExpense(expense);
+    if (success) setOpenAddExpenseModal(false);
+  };
 
-    setLoading(true);
+  const handleDeleteExpense = async () => {
+    const success = await deleteExpense(openDeleteAlert.data);
+    if (success) setOpenDeleteAlert({ show: false, data: null });
+  };
 
-    try {
-      const response = await axiosInstance.get(
-        `${API_ENDPOINTS.EXPENSE.GET_ALL_EXPENSE}`
-      );
-
-      if (response.data) {
-        setExpenseData(response.data);
-      }
-    } catch (error) {
-      console.error("Something Went Wrong, Please Try Again", error);
-    } finally {
-      setLoading(false);
+  const handleFileUpload = (e) => {
+    if (e.target.files.length > 0) {
+      uploadExpenses(e.target.files[0]);
+      e.target.value = "";
     }
   };
 
-  // Add Expense
-  const addExpense = async (expense) => {
-    const { source, name, amount, category, date, icon, type, percentagePaid } =
-      expense;
+  const filteredExpenses = useMemo(() => {
+    return expenseData?.filter(exp => {
+      const matchesSearch =
+        exp.source.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        exp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        exp.category.toLowerCase().includes(searchQuery.toLowerCase());
 
-    // Validation
-    console.log("Source value:", source);
-    if (!source.trim()) {
-      toast.error("Source is required");
-      return;
-    }
-    if (!name.trim()) {
-      toast.error("Name is required");
-      return;
-    }
-    if (!category.trim()) {
-      toast.error("Category is required");
-      return;
-    }
-    if (!amount || isNaN(amount) || Number(amount) <= 0) {
-      toast.error("Amount should be a valid number greater than 0.");
-      return;
-    }
-    if (!date) {
-      toast.error("Date is required.");
-      return;
-    }
-    if (percentagePaid < 0 || percentagePaid > 100) {
-      toast.error("Percentage Paid must be between 0 and 100.");
-      return;
-    }
-    if (!type) {
-      toast.error("Expense Type is required.");
-      return;
-    }
+      const matchesCategory = category === "" || exp.type === category;
 
-    try {
-      await axiosInstance.post(API_ENDPOINTS.EXPENSE.ADD_EXPENSE, {
-        source,
-        category,
-        amount,
-        date,
-        name,
-        icon,
-        type, // send type
-        percentagePaid, // send percentagePaid
-      });
+      const expenseDate = moment(exp.date);
+      const matchesDate =
+        (!dateRange.start || expenseDate.isSameOrAfter(moment(dateRange.start), 'day')) &&
+        (!dateRange.end || expenseDate.isSameOrBefore(moment(dateRange.end), 'day'));
 
-      setOpenAddExpenseModal(false);
-      toast.success("Expense Added Successfully");
-      fetchExpenseDetails();
-    } catch (error) {
-      console.error(
-        "Error Adding Expense:",
-        error.response?.data?.message || error.message
-      );
-    }
+      return matchesSearch && matchesCategory && matchesDate;
+    });
+  }, [expenseData, searchQuery, category, dateRange]);
+
+  const totalAmount = filteredExpenses?.reduce((acc, curr) => acc + curr.amount, 0) || 0;
+
+  const handleClearFilters = () => {
+    setSearchQuery("");
+    setCategory("");
+    setDateRange({ start: "", end: "" });
   };
-
-  // Delete Expense
-  const deleteExpense = async (id) => {
-    try {
-      await axiosInstance.delete(API_ENDPOINTS.EXPENSE.DELETE_EXPENSE(id));
-
-      setOpenDeleteAlert({ show: false, data: null });
-      toast.success("Expense Deleted Successfully");
-      fetchExpenseDetails();
-    } catch (error) {
-      console.error(
-        "Error Deleting Expense:",
-        error.response.data?.message || error.message
-      );
-    }
-  };
-
-  // Download Expenses
-  const downloadExpenseDetails = async () => {
-    try {
-      const response = await axiosInstance.get(
-        API_ENDPOINTS.EXPENSE.DOWNLOAD_EXCEL_EXPENSE,
-        {
-          responseType: "blob",
-        }
-      );
-
-      // Create the URL for the Binary Large Object(blob)
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-
-      link.href = url;
-      link.setAttribute("download", "expense_details.xlsx");
-
-      document.body.appendChild(link);
-
-      link.click();
-      link.parentNode.removeChild(link);
-
-      window.URL.revokeObjectURL(url);
-    } catch (error) {
-      console.error("Error downloading expense details", error);
-      toast.error("Failed to download expense details. Please try again");
-    }
-  };
-
-  // Upload Expenses
-  // Upload Expenses
-  const uploadExpenseDetails = async (file) => {
-    if (!file) {
-      toast.error("Please select a file to upload");
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    try {
-      const response = await axiosInstance.post(
-        API_ENDPOINTS.EXPENSE.UPLOAD_EXCEL_EXPENSE,
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-
-      const { message, totalRows, attempted } = response.data;
-
-      toast.success(
-        `${message}\nTotal Rows: ${totalRows}\nProcessed: ${attempted}`
-      );
-
-      fetchExpenseDetails(); // Refresh list after upload
-    } catch (error) {
-      console.error("Error uploading expenses:", error);
-      toast.error(error.response?.data?.message || "Failed to upload file");
-    }
-  };
-
-  useEffect(() => {
-    fetchExpenseDetails();
-
-    return () => {};
-  }, []);
 
   return (
     <DashboardLayout activeMenu="Expenses">
-      <div className="my-5 mx-auto">
-        <div className="grid grid-cols-1 gap-6">
-          <div className="">
-            {(user?.role === "admin" || user?.role === "user" || user?.role === "viewer") && (
-              <ExpenseOverview
-                transactions={expenseData}
-                onAddExpense={() => {
-                  if (!hasRole(["user", "admin"]))
-                    return toast.error("You are not allowed to add expenses.");
-                  setOpenAddExpenseModal(true);
-                }}
-              />
-            )}
+      <div className="my-8 mx-auto max-w-7xl px-4 md:px-8">
+        <ExpenseHeader
+          totalCount={filteredExpenses?.length || 0}
+          totalAmount={totalAmount}
+          onAddExpense={() => {
+            if (!hasRole(["user", "admin"])) {
+              return toast.error("You are not allowed to add expenses.");
+            }
+            setOpenAddExpenseModal(true);
+          }}
+          onDownload={downloadExpenses}
+          onUpload={handleFileUpload}
+          fileInputRef={fileInputRef}
+          isViewer={!hasRole(["user", "admin"])}
+        />
+
+        <ExpenseFilters
+          search={searchQuery}
+          onSearchChange={setSearchQuery}
+          category={category}
+          onCategoryChange={setCategory}
+          dateRange={dateRange}
+          onDateRangeChange={setDateRange}
+          onClearFilters={handleClearFilters}
+        />
+
+        <div className="grid grid-cols-1 gap-8">
+          <div className="animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <ExpenseOverview transactions={filteredExpenses} />
           </div>
 
-          <ExpenseList
-            transactions={expenseData}
-            onDelete={(id) => {
-              if (!hasRole(["admin"]))
-                return toast.error("Only admins can delete expenses.");
-              setOpenDeleteAlert({ show: true, data: id });
-            }}
-            onDownload={downloadExpenseDetails}
-            onUpload={(file) => {
-              if (!hasRole(["user", "admin"]))
-                return toast.error("You cannot upload expenses.");
-              uploadExpenseDetails(file);
-            }}
-          />
+          <div className="animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+            <ExpenseTable
+              data={filteredExpenses}
+              onDelete={(id) => {
+                if (!hasRole(["admin"])) {
+                  return toast.error("Only admins can delete expenses.");
+                }
+                setOpenDeleteAlert({ show: true, data: id });
+              }}
+              isAdmin={hasRole(["admin"])}
+            />
+          </div>
         </div>
 
         <Modal
@@ -227,7 +132,7 @@ const Expense = () => {
           onClose={() => setOpenAddExpenseModal(false)}
           title="Add Expense"
         >
-          <AddExpenseForm onAddExpense={addExpense} />
+          <AddExpenseForm onAddExpense={handleAddExpense} />
         </Modal>
 
         <Modal
@@ -237,7 +142,7 @@ const Expense = () => {
         >
           <DeleteAlert
             content="Are you sure you want to delete this expense"
-            onDelete={() => deleteExpense(openDeleteAlert.data)}
+            onDelete={handleDeleteExpense}
           />
         </Modal>
       </div>
