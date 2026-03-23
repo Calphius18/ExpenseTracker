@@ -26,7 +26,7 @@ const ExpenseFilters = ({ search, onSearchChange, category, onCategoryChange, da
                     onChange={(e) => onCategoryChange(e.target.value)}
                     className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2 outline-none focus:border-primary focus:ring-4 focus:ring-primary/5 transition-all text-sm appearance-none cursor-pointer h-10"
                 >
-                    <option value="">All Categories</option>
+                    <option value="">All Types</option>
                     <option value="CAPEX">CAPEX</option>
                     <option value="OPEX">OPEX</option>
                     <option value="Transport Fee">Transport Fee</option>
