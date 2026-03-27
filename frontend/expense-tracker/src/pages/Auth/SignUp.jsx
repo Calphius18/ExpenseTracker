@@ -28,7 +28,7 @@ const SignUp = () => {
   const TOTAL_STEPS = 2;
   const STEP_LABELS = ["Profile", "Credentials"];
 
-  // Navigate to next step
+
   const handleNextStep = () => {
     if (currentStep === 1) {
       if (!fullName.trim()) {
@@ -41,14 +41,13 @@ const SignUp = () => {
     }
   };
 
-  // Navigate to previous step
+
   const handlePrevStep = () => {
     setError(null);
     setSlideDirection("left");
     setCurrentStep(1);
   };
 
-  // Handle Sign Up
   const handleSignUp = async (e) => {
     e.preventDefault();
 
@@ -112,7 +111,6 @@ const SignUp = () => {
             </p>
           </header>
 
-          {/* Step Indicator */}
           <StepIndicator
             currentStep={currentStep}
             totalSteps={TOTAL_STEPS}
@@ -120,7 +118,6 @@ const SignUp = () => {
           />
 
           <form onSubmit={handleSignUp} className="mt-10">
-            {/* Step 1: Profile Info */}
             {currentStep === 1 && (
               <div
                 key="step-1"
